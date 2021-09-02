@@ -13,7 +13,7 @@ Block::Block(Playground pg)
     pl[1].position.y = pl[0].position.y; 
 
     pl[0].color = sf::Color::Red;
-    pl[1].color = sf::Color::Blue;
+    pl[1].color = sf::Color::Red;
     _platform = pl;
 
     _shell.setFillColor(sf::Color::Red);
@@ -23,6 +23,8 @@ Block::Block(Playground pg)
 
     _direction.x = 1;
     _direction.y = -1;
+
+    std::cout << "direction x = " << _direction.x << "; direction y = " << _direction.y << '\n';
 
     std::cout << "platform 0 x = " << pl[0].position.x << "; platform 0 y = " << pl[0].position.y << '\n';
     std::cout << "platform 1 x = " << pl[1].position.x << "; platform 1 y = " << pl[1].position.y << '\n';
@@ -36,7 +38,7 @@ void Block::draw(sf::RenderTarget& window)
         window.draw(b);
 
     _timer = _clock.getElapsedTime();
-    if (_timer.asMilliseconds() > 5)
+    if (_timer.asMilliseconds() > 3)
     {
         hit();
         set_vector();
@@ -76,6 +78,9 @@ void Block::moove(const char direction)
 
 bool Block::end_game()
 {
+    if (_shell.getPosition().y + 10 > _pg.get_field_start_point().y + 15 * 25 + 10)
+        return true;
+
     return false;
 }
 
@@ -88,13 +93,29 @@ void Block::hit()
     float right = _pg.get_field_start_point().x + 15 * 43;
 
     if (center.x < _pg.get_field_start_point().x + 5)
-        hit_processing(center);
+        _direction.x *= -1;
     else if (center.x > _pg.get_field_start_point().x + 15 * 43 - 5)
-        hit_processing(center);
+        _direction.x *= -1;
     else if (center.y < _pg.get_field_start_point().y + 5)
-        hit_processing(center);
+        _direction.y *= -1;
     else if (center.x >= _platform[0].position.x && center.x <= _platform[1].position.x && center.y > _platform[0].position.y - 5)
-        hit_processing(center);
+    {
+        _direction.y *= -1;
+        if (_direction.x < 0)
+        {
+            if (center.x < _platform[0].position.x + 75)
+                _direction.x += 0.1;
+            else
+                _direction.x -= 0.1;
+        }
+        else
+        {
+            if (center.x < _platform[0].position.x + 75)
+                _direction.x -= 0.1;
+            else
+                _direction.x += 0.1;
+        }
+    }
 
     if (center.y < _pg.get_field_start_point().y + 220)
         hit_block(center);
@@ -108,44 +129,44 @@ void Block::set_vector()
     _shell.setPosition(new_pos);
 }
 
-void Block::hit_processing(sf::Vector2f center)
-{
-    sf::Vector2f orig_direction = center;
-    sf::Vector2f prev_position;
-    std::vector<sf::Vector2f> vectors;
-
-    prev_position.x = center.x + -_direction.x;
-    prev_position.y = center.y + -_direction.y;
-
-    orig_direction.x += 1;
-    orig_direction.y += 1;
-    vectors.push_back(orig_direction);
-    orig_direction = center;
-
-    orig_direction.x += 1;
-    orig_direction.y -= 1; 
-    vectors.push_back(orig_direction);
-    orig_direction = center;
-
-    orig_direction.x -= 1;
-    orig_direction.y += 1;
-    vectors.push_back(orig_direction);
-    orig_direction = center;
-
-    orig_direction.x -= 1;
-    orig_direction.y -= 1;
-    vectors.push_back(orig_direction);
-    orig_direction = center;
-
-    for (auto& next : vectors)
-        if (next != prev_position && !out_of_range(next))
-        {
-            _direction.x = next.x - center.x;
-            _direction.y = next.y - center.y;
-
-            return;
-        }
-}
+//void Block::hit_processing(sf::Vector2f center)
+//{
+//    sf::Vector2f orig_direction = center;
+//    sf::Vector2f prev_position;
+//    std::vector<sf::Vector2f> vectors;
+//
+//    prev_position.x = center.x + -_direction.x;
+//    prev_position.y = center.y + -_direction.y;
+//
+//    orig_direction.x += 1;
+//    orig_direction.y += 1;
+//    vectors.push_back(orig_direction);
+//    orig_direction = center;
+//
+//    orig_direction.x += 1;
+//    orig_direction.y -= 1; 
+//    vectors.push_back(orig_direction);
+//    orig_direction = center;
+//
+//    orig_direction.x -= 1;
+//    orig_direction.y += 1;
+//    vectors.push_back(orig_direction);
+//    orig_direction = center;
+//
+//    orig_direction.x -= 1;
+//    orig_direction.y -= 1;
+//    vectors.push_back(orig_direction);
+//    orig_direction = center;
+//
+//    for (auto& next : vectors)
+//        if (next != prev_position && !out_of_range(next))
+//        {
+//            _direction.x = next.x - center.x;
+//            _direction.y = next.y - center.y;
+//            std::cout << "direction x = " << _direction.x << "; direction y = " << _direction.y << '\n';
+//            return;
+//        }
+//}
 
 bool Block::out_of_range(sf::Vector2f center)
 {
@@ -159,6 +180,7 @@ bool Block::out_of_range(sf::Vector2f center)
 void Block::draw_blocks()
 {
     sf::VertexArray quad(sf::Quads, 4);
+
     sf::Vector2f zero_point = _pg.get_field_start_point();
     zero_point.x += 12;
     zero_point.y += 5;
@@ -182,10 +204,8 @@ void Block::draw_blocks()
             zero_point.x = _pg.get_field_start_point().x + 12;
             zero_point.y += 25;
         }
-        
         _blocks.push_back(quad);
-
-    } while (zero_point.y < _pg.get_field_start_point().y + 200);
+    } while (zero_point.y < _pg.get_field_start_point().y + 150);
 }
 
 void Block::hit_block(sf::Vector2f center)
@@ -193,12 +213,92 @@ void Block::hit_block(sf::Vector2f center)
     center.x += _direction.x * 5;
     center.y += _direction.y * 5;
 
-    for (std::vector<sf::VertexArray>::reverse_iterator riter = _blocks.rbegin(); riter != _blocks.rend(); ++riter)
+    /*for (std::vector<sf::VertexArray>::reverse_iterator riter = _blocks.rbegin(); riter != _blocks.rend(); ++riter)
     {
         if ((*riter)[0].position.x <= center.x && (*riter)[0].position.x + 21 >= center.x &&
             (*riter)[0].position.y <= center.y && (*riter)[0].position.y + 21 >= center.y)
         {
-            
+            if (center.y == (*riter)[0].position.y + 21)
+            {
+                _direction.y *= -1;
+                _blocks.erase();
+            }
+            if (center.x == (*riter)[0].position.x)
+            {
+                _direction.x *= -1;
+
+            }
+            if (center.y == (*riter)[0].position.y)
+            {
+                _direction.y *= -1;
+
+            }
+            if (center.x == (*riter)[0].position.x + 21)
+            {
+                _direction.x *= -1;
+
+            }
+        }
+    }*/
+
+    for (std::vector<sf::VertexArray>::iterator iter = _blocks.begin(); iter != _blocks.end(); ++iter)
+    {
+        if ((*iter)[0].position.x <= center.x && (*iter)[0].position.x + 21 >= center.x &&
+            (*iter)[0].position.y <= center.y && (*iter)[0].position.y + 21 >= center.y)
+        {
+            /*if (center.x == (*iter)[0].position.x && center.y == (*iter)[0].position.y)
+            {
+                _direction.y *= -1;
+                _direction.x *= -1;
+                _blocks.erase(iter);
+            }
+            else if (center.x == (*iter)[0].position.x && center.y == (*iter)[0].position.y + 21)
+            {
+                _direction.y *= -1;
+                _direction.x *= -1;
+                _blocks.erase(iter);
+            }
+            else if (center.x == (*iter)[0].position.x + 21 && center.y == (*iter)[0].position.y)
+            {
+                _direction.y *= -1;
+                _direction.x *= -1;
+                _blocks.erase(iter);
+            }
+            else if (center.x == (*iter)[0].position.x + 21 && center.y == (*iter)[0].position.y + 21)
+            {
+                _direction.y *= -1;
+                _direction.x *= -1;
+                _blocks.erase(iter);
+            }*/
+
+            if (center.y == (*iter)[0].position.y + 21)
+            {
+                _direction.y *= -1;
+                _blocks.erase(iter);
+            }
+            else if (center.x == (*iter)[0].position.x)
+            {
+                _direction.x *= -1;
+                _blocks.erase(iter);
+            }
+            else if (center.y == (*iter)[0].position.y)
+            {
+                _direction.y *= -1;
+                _blocks.erase(iter);
+            }
+            else if (center.x == (*iter)[0].position.x + 21)
+            {
+                _direction.x *= -1;
+                _blocks.erase(iter);
+            }
+            else
+            {
+                _blocks.erase(iter);
+                _direction.x *= -1;
+                _direction.y *= -1;
+            }
+
+            break;
         }
     }
 }

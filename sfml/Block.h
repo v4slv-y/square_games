@@ -10,7 +10,7 @@ class Block :
 	sf::VertexArray _platform;
 	sf::CircleShape _shell;
 	sf::Vector2f _direction;
-	int _velocity = 5;
+	int _velocity = 10;
 	Playground _pg;
 	std::vector<sf::VertexArray> _blocks;
 
@@ -22,7 +22,7 @@ public:
 private:
 	void moove_platform(int);
 	void set_vector();
-	void hit_processing(sf::Vector2f);
+	//void hit_processing(sf::Vector2f);
 	void hit();
 	bool out_of_range(sf::Vector2f);
 	void hit_block(sf::Vector2f);

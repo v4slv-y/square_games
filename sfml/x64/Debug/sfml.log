@@ -1,4 +1,22 @@
 ﻿  Block.cpp
-  main.cpp
-  Generating Code...
+C:\devDir\sfml\sfml\Block.cpp(107,36): warning C4305: '+=': truncation from 'double' to 'T'
+          with
+          [
+              T=float
+          ]
+C:\devDir\sfml\sfml\Block.cpp(109,36): warning C4305: '-=': truncation from 'double' to 'T'
+          with
+          [
+              T=float
+          ]
+C:\devDir\sfml\sfml\Block.cpp(114,36): warning C4305: '-=': truncation from 'double' to 'T'
+          with
+          [
+              T=float
+          ]
+C:\devDir\sfml\sfml\Block.cpp(116,36): warning C4305: '+=': truncation from 'double' to 'T'
+          with
+          [
+              T=float
+          ]
   sfml.vcxproj -> C:\devDir\sfml\sfml\x64\Debug\sfml.exe
